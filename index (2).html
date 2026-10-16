@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>융합 교과 맞춤형 AI 튜터</title>
+    <style>
+        :root {
+            --bg-color: #f4f6f8;
+            --card-bg: #ffffff;
+            --text-color: #2b303a;
+            --primary-color: #4a6fa5;
+            --primary-hover: #3b5984;
+            --accent-color: #e8eef5;
+            --danger-color: #d9534f;
+            --border-color: #dcdfe6;
+        }
+
+        body {
+            font-family: 'Pretendard', 'Malgun Gothic', sans-serif;
+            max-width: 650px;
+            margin: 0 auto;
+            padding: 25px 15px;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+        }
+
+        .container {
+            background-color: var(--card-bg);
+            padding: 35px 25px;
+            border-radius: 16px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.04);
+        }
+
+        h2 {
+            text-align: center;
+            color: var(--text-color);
+            margin-bottom: 25px;
+            font-size: 22px;
+            font-weight: 700;
+        }
+
+        .api-section {
+            background-color: var(--accent-color);
+            padding: 18px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+
+        label {
+            font-weight: 600;
+            display: block;
+            margin-top: 18px;
+            margin-bottom: 6px;
+            font-size: 14px;
+            color: #495057;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 8px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            box-sizing: border-box;
+            font-size: 14px;
+            background-color: #fff;
+            transition: border-color 0.2s;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: var(--primary-color);
+        }
+
+        button {
+            width: 100%;
+            padding: 14px;
+            color: white;
+            font-size: 15px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            margin-top: 12px;
+            transition: background-color 0.2s, opacity 0.2s;
+        }
+
+        .btn-submit {
+            background-color: var(--primary-color);
+        }
+
+        .btn-submit:hover {
+            background-color: var(--primary-hover);
+        }
+
+        .btn-clear {
+            background-color: #8c9ba5;
+            font-size: 13px;
+            padding: 10px;
+        }
+
+        .btn-clear:hover {
+            background-color: #6c7a85;
+        }
+
+        button:disabled {
+            background-color: #a0aab2;
+            cursor: not-allowed;
+        }
+
+        #result {
+            margin-top: 25px;
+            padding: 22px;
+            border-left: 4px solid var(--primary-color);
+            background-color: #f9fafb;
+            border-radius: 6px;
+            white-space: pre-wrap;
+            display: none;
+            line-height: 1.8;
+            font-size: 15px;
+        }
+
+        details {
+            margin-top: 20px;
+            background-color: var(--accent-color);
+            padding: 14px;
+            border-radius: 8px;
+        }
+
+        summary {
+            font-weight: 600;
+            cursor: pointer;
+            color: var(--primary-color);
+            outline: none;
+        }
+
+        details p {
+            margin-top: 10px;
+            margin-bottom: 0;
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: #323232;
+            color: #fff;
+            padding: 12px 24px;
+            border-radius: 25px;
+            font-size: 14px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            opacity: 0;
+            transition: opacity 0.3s ease-in-out;
+            pointer-events: none;
+            z-index: 1000;
+        }
+
+        .toast.show {
+            opacity: 1;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>👨‍🏫 내 관심사로 배우는 AI 튜터</h2>
+        
+        <div class="api-section">
+            <label for="apiKeyInput">🔑 제미나이 API 키 입력 (실습용)</label>
+            <input type="password" id="apiKeyInput" placeholder="발급받은 API 키를 붙여넣으세요">
+        </div>
+        
+        <label for="subjectSelect">1. 어떤 과목을 질문할까요?</label>
+        <select id="subjectSelect">
+            <option value="물리">물리 (예: 뉴턴의 법칙, 전자기 유도, 파동)</option>
+            <option value="지리">지리 (예: 판구조론, 도시화 현상, 기후변화)</option>
+            <option value="정보/AI">정보 및 AI (예: 머신러닝, 알고리즘, 인공신경망)</option>
+            <option value="경영/경제">경영 및 경제 (예: 수요와 공급, 기회비용)</option>
+            <option value="기타">기타 교과</option>
+        </select>
+
+        <label for="conceptInput">2. 궁금한 교과 개념이 무엇인가요?</label>
+        <input type="text" id="conceptInput" placeholder="예: 지구온난화에 따른 해수면 상승">
+        
+        <label for="interestInput">3. 나의 관심사는 무엇인가요? (비유의 소재가 됩니다)</label>
+        <input type="text" id="interestInput" placeholder="예: 리그오브레전드(롤), K-POP 아이돌, 마블 영화">
+        
+        <button id="submitBtn" class="btn-submit" onclick="generateTutor()">선생님, 설명해 주세요!</button>
+        <button class="btn-clear" onclick="clearCache()">🗑️ 이전 답변 및 학습 캐시 초기화</button>
+        
+        <div id="result"></div>
+    </div>
+
+    <div id="toast" class="toast"></div>
+
+    <script>
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            toast.innerText = message;
+            toast.classList.add('show');
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+
+        function clearCache() {
+            localStorage.clear();
+            showToast('저장된 데이터가 모두 초기화되었습니다.');
+            document.getElementById('result').style.display = 'none';
+        }
+
+        async function generateTutor() {
+            const apiKey = document.getElementById('apiKeyInput').value.trim();
+            const subject = document.getElementById('subjectSelect').value;
+            const concept = document.getElementById('conceptInput').value.trim();
+            const interest = document.getElementById('interestInput').value.trim();
+            const resultDiv = document.getElementById('result');
+            const submitBtn = document.getElementById('submitBtn');
+
+            if (!apiKey) return showToast("API 키를 입력해 주세요.");
+            if (!concept || !interest) return showToast("교과 개념과 관심사를 모두 입력해 주세요.");
+
+            const today = new Date().toLocaleDateString();
+            let usage = JSON.parse(localStorage.getItem('aiTutorUsage')) || { date: today, count: 0 };
+            
+            if (usage.date !== today) {
+                usage = { date: today, count: 0 }; 
+            }
+            if (usage.count >= 5) {
+                return showToast("무료 한도 보호를 위해 하루 5회까지만 이용 가능합니다.");
+            }
+
+            const cacheKey = `cache_${subject}_${concept}_${interest}`;
+            const savedAnswer = localStorage.getItem(cacheKey);
+
+            if (savedAnswer) {
+                resultDiv.style.display = 'block';
+                resultDiv.innerHTML = "<span style='color:#2b8a3e; font-size:13px; font-weight:600;'>✅ 저장된 이전 답변에서 불러왔습니다.</span><br><br>" + savedAnswer;
+                return; 
+            }
+
+            submitBtn.disabled = true;
+            submitBtn.innerText = `답변 생성 중... (오늘 ${usage.count + 1}/5회)`;
+            resultDiv.style.display = 'block';
+            resultDiv.innerHTML = "구글 AI 서버에 연결하는 중입니다...";
+
+            const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=${apiKey}`;
+
+            const payload = {
+                contents: [{
+                    parts: [{
+                        text: `너는 고등학교 1~2학년 학생들의 눈높이에 맞춰 어려운 교과 개념을 쉽고 재미있게 가르치는 '${subject}' 과목의 일타 강사야.
+
+학생이 질문한 개념: ${concept}
+학생의 관심사: ${interest}
+
+[중요 지시사항]
+1. 별표(*), 샵(#) 등 마크다운 기호는 절대 사용하지 마. 텍스트 강조도 하지 마.
+2. 오직 일반 텍스트와 <details>, <summary> 태그만 사용해.
+3. 인사말, 서론 생략하고 바로 아래 양식으로 출력해.
+4. 문장이 중간에 끊기지 않도록 퀴즈 보기(1번~4번)와 정답/해설까지 끝까지 완전하게 작성해.
+
+[💡 찰떡 비유]
+(관심사 '${interest}'를 활용한 재미있는 비유 설명)
+
+[📚 핵심 원리]
+(개념 '${concept}'의 교과서적 원리 설명)
+
+[🎯 확인 퀴즈]
+(객관식 4지 선다형 1문제: 1번, 2번, 3번, 4번 보기를 모두 완벽하게 작성할 것)
+
+<details>
+<summary>👉 정답 및 해설 확인하기 (클릭)</summary>
+정답: O번
+해설: (왜 그 번호가 정답인지 명확하게 설명)
+</details>`
+                    }]
+                }],
+                generationConfig: {
+                    maxOutputTokens: 4000,
+                    temperature: 0.7
+                }
+            };
+
+            const retryDelays = [2000, 4000, 8000];
+            const maxRetries = retryDelays.length + 1;
+            let currentTry = 0;
+            let success = false;
+
+            while (currentTry < maxRetries && !success) {
+                try {
+                    currentTry++;
+                    if (currentTry > 1) {
+                        const waitSec = retryDelays[currentTry - 2] / 1000;
+                        resultDiv.innerHTML = `⚠️ 구글 AI 서버 혼잡으로 대기 중입니다...\n${waitSec}초 후 자동으로 재시도합니다 (${currentTry}/${maxRetries}차 시도)`;
+                        await new Promise(res => setTimeout(res, retryDelays[currentTry - 2]));
+                    }
+
+                    const response = await fetch(API_URL, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+
+                    if (!response.ok) {
+                        const errorData = await response.json().catch(() => ({}));
+                        
+                        if ((response.status === 503 || response.status === 429) && currentTry < maxRetries) {
+                            continue;
+                        }
+
+                        const exactErrorMsg = errorData.error?.message || `상태 코드 ${response.status}`;
+                        throw new Error(exactErrorMsg);
+                    }
+
+                    const data = await response.json();
+                    const finalAnswer = data.candidates[0].content.parts[0].text;
+                    
+                    resultDiv.innerHTML = finalAnswer;
+
+                    usage.count += 1;
+                    localStorage.setItem('aiTutorUsage', JSON.stringify(usage));
+                    localStorage.setItem(cacheKey, finalAnswer);
+                    success = true;
+
+                } catch (error) {
+                    if (currentTry >= maxRetries) {
+                        resultDiv.innerHTML = `<span style="color:var(--danger-color); font-weight:600;">오류가 발생했습니다:</span><br>${error.message}<br><br><span style="font-size:12px; color:#6c757d;">(구글 서버 트래픽이 매우 높은 상태입니다. 1~2분 후 다시 시도해 주세요.)</span>`;
+                    }
+                }
+            }
+
+            submitBtn.disabled = false;
+            submitBtn.innerText = "선생님, 설명해 주세요!";
+        }
+    </script>
+</body>
+</html>
